@@ -2,10 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\StoreController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\BookingManagementController;
 use App\Http\Controllers\Admin\ProductManagementController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,24 @@ Route::get('/', [StoreController::class, 'index'])
 
 Route::get('/products/{slug}', [StoreController::class, 'show'])
     ->name('store.show');
+
+/*
+|--------------------------------------------------------------------------
+| Shopping Cart Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/cart', [CartController::class, 'index'])
+    ->name('cart.index');
+
+Route::post('/cart/add/{slug}', [CartController::class, 'add'])
+    ->name('cart.add');
+
+Route::patch('/cart/update/{productId}', [CartController::class, 'update'])
+    ->name('cart.update');
+
+Route::delete('/cart/remove/{productId}', [CartController::class, 'remove'])
+    ->name('cart.remove');
 
 /*
 |--------------------------------------------------------------------------
@@ -50,27 +69,31 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 
 Route::middleware('auth')->group(function () {
-    // Booking form.
     Route::get('/products/{slug}/book', [BookingController::class, 'create'])
         ->name('bookings.create');
 
-    // Submit booking.
     Route::post('/products/{slug}/book', [BookingController::class, 'store'])
         ->name('bookings.store');
 
-    // Customer booking history.
     Route::get('/my-bookings', [BookingController::class, 'index'])
         ->name('bookings.index');
 
-    // Booking confirmation and details.
     Route::get('/my-bookings/{reference}', [BookingController::class, 'show'])
         ->name('bookings.show');
-        
 });
+
+/*
+|--------------------------------------------------------------------------
+| Administrator Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth', 'admin'])
     ->group(function () {
+
+        // Booking management.
         Route::get('/bookings', [
             BookingManagementController::class,
             'index',
@@ -85,6 +108,7 @@ Route::prefix('admin')
             BookingManagementController::class,
             'updateStatus',
         ])->name('bookings.update-status');
+
         // Product management.
         Route::get('/products', [
             ProductManagementController::class,
@@ -115,36 +139,4 @@ Route::prefix('admin')
             ProductManagementController::class,
             'destroy',
         ])->name('products.destroy');
-                // Product Management
-        Route::get('/products', [
-            ProductManagementController::class,
-            'index',
-        ])->name('products.index');
-
-        Route::get('/products/create', [
-            ProductManagementController::class,
-            'create',
-        ])->name('products.create');
-
-        Route::post('/products', [
-            ProductManagementController::class,
-            'store',
-        ])->name('products.store');
-
-        Route::get('/products/{product}/edit', [
-            ProductManagementController::class,
-            'edit',
-        ])->name('products.edit');
-
-        Route::put('/products/{product}', [
-            ProductManagementController::class,
-            'update',
-        ])->name('products.update');
-
-        Route::delete('/products/{product}', [
-            ProductManagementController::class,
-            'destroy',
-        ])->name('products.destroy');
-
     });
-    

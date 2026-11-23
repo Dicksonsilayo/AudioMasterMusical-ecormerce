@@ -38,6 +38,18 @@
        class="transition hover:text-orange-400">
         Products
     </a>
+    <a href="{{ route('cart.index') }}"
+   class="relative font-semibold text-orange-300 transition hover:text-orange-400">
+
+    🛒 Cart
+
+    @if (array_sum(session('cart', [])) > 0)
+        <span class="ml-1 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white">
+            {{ array_sum(session('cart', [])) }}
+        </span>
+    @endif
+
+</a>
 
     <a href="{{ route('store.index') }}#categories"
        class="transition hover:text-orange-400">

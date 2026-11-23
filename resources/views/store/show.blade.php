@@ -1,19 +1,30 @@
 @extends('layouts.app')
 
-@section('title', $product->name . ' | Audio master Music Store')
+@section('title', $product->name . ' | Audio Master Music Store')
 
 @section('content')
 
+<div class="mx-auto max-w-6xl">
+
+    {{-- Back to Store --}}
     <div class="mb-8">
         <a href="{{ route('store.index') }}"
-           class="font-semibold text-orange-600 hover:text-orange-700">
+           class="font-semibold text-orange-600 transition hover:text-orange-700">
             &larr; Back to Store
         </a>
     </div>
 
-    <div class="grid grid-cols-1 gap-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:grid-cols-2 md:p-10">
+    @if ($errors->any())
+        <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+            @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
 
-        {{-- Product image --}}
+    <div class="grid grid-cols-1 gap-10 overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:grid-cols-2 md:p-10">
+
+        {{-- Product Image --}}
         <div class="flex min-h-80 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
 
             @if ($product->image_path)
@@ -35,14 +46,14 @@
 
         </div>
 
-        {{-- Product information --}}
+        {{-- Product Information --}}
         <div class="flex flex-col justify-center">
 
             <p class="mb-3 text-sm font-bold uppercase tracking-widest text-orange-600">
-                {{ $product->category->name }}
+                {{ $product->category->name ?? 'Musical Equipment' }}
             </p>
 
-            <h1 class="text-3xl font-extrabold md:text-4xl">
+            <h1 class="text-3xl font-extrabold text-gray-900 md:text-4xl">
                 {{ $product->name }}
             </h1>
 
@@ -50,6 +61,7 @@
                 TZS {{ number_format((float) $product->price, 0) }}
             </p>
 
+            {{-- Stock Status --}}
             <div class="mt-5">
 
                 @if ($product->stock_quantity > 0)
@@ -68,14 +80,20 @@
 
             </div>
 
+            {{-- Description --}}
             <div class="mt-8">
-                <h2 class="text-xl font-bold">Product Description</h2>
+
+                <h2 class="text-xl font-bold text-gray-900">
+                    Product Description
+                </h2>
 
                 <p class="mt-3 whitespace-pre-line leading-8 text-gray-600">
                     {{ $product->description ?: 'No description is available for this product yet.' }}
                 </p>
+
             </div>
 
+            {{-- Product Details --}}
             <div class="mt-8 border-t border-gray-200 pt-6">
 
                 <p class="text-sm text-gray-500">
@@ -83,40 +101,95 @@
                 </p>
 
                 <p class="mt-2 text-sm text-gray-500">
-                    Category: {{ $product->category->name }}
+                    Category: {{ $product->category->name ?? 'Musical Equipment' }}
                 </p>
 
             </div>
 
-            {{-- Booking functionality will be added in a later lesson. --}}
+            {{-- Add to Cart --}}
             <div class="mt-8">
-                <button
-                    type="button"
-                    disabled
-                    class="w-full cursor-not-allowed rounded-lg bg-gray-300 px-6 py-4 font-bold text-gray-600"
-                >
-                    Booking functionality coming soon
-                </button>
 
-                <p class="mt-3 text-sm text-gray-500">
-                    Product booking will become available when we implement customer accounts and bookings.
-                </p>
+                @if ($product->stock_quantity > 0)
+
+                    <form
+                        action="{{ route('cart.add', $product->slug) }}"
+                        method="POST"
+                        class="space-y-4"
+                    >
+                        @csrf
+
+                        <div>
+                            <label
+                                for="quantity"
+                                class="mb-2 block font-semibold text-gray-700"
+                            >
+                                Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="quantity"
+                                name="quantity"
+                                min="1"
+                                max="{{ $product->stock_quantity }}"
+                                value="{{ old('quantity', 1) }}"
+                                required
+                                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                            >
+
+                            <p class="mt-2 text-sm text-gray-500">
+                                Maximum available: {{ $product->stock_quantity }}
+                            </p>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="w-full rounded-lg bg-orange-500 px-6 py-4 font-bold text-white transition hover:bg-orange-600"
+                        >
+                            🛒 Add to Cart
+                        </button>
+
+                    </form>
+
+                    {{-- Existing Direct Booking --}}
+                    @auth
+
+                        <a
+                            href="{{ route('bookings.create', $product->slug) }}"
+                            class="mt-4 block w-full rounded-lg border border-gray-300 px-6 py-3 text-center font-semibold text-gray-700 transition hover:bg-gray-100"
+                        >
+                            Book This Product Directly
+                        </a>
+
+                    @else
+
+                        <a
+                            href="{{ route('login') }}"
+                            class="mt-4 block w-full rounded-lg border border-gray-300 px-6 py-3 text-center font-semibold text-gray-700 transition hover:bg-gray-100"
+                        >
+                            Login for Direct Booking
+                        </a>
+
+                    @endauth
+
+                @else
+
+                    <button
+                        type="button"
+                        disabled
+                        class="w-full cursor-not-allowed rounded-lg bg-gray-300 px-6 py-4 font-bold text-gray-600"
+                    >
+                        Currently Unavailable
+                    </button>
+
+                @endif
+
             </div>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-    hello
-    
-</body>
-</html>
+
         </div>
 
     </div>
+
+</div>
 
 @endsection
